@@ -1,0 +1,42 @@
+volumes:
+  ollama: 
+
+services:
+
+  ollama:
+    build: ./ollama
+    container_name: ollama
+    ports:
+      - "11434:11434"
+    network_mode: host
+    environment:
+      - OLLAMA_HOST=0.0.0.0:11434
+  db:
+    image: postgres:17.2
+    container_name: postgres_db
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: admin
+      POSTGRES_DB: bank_db
+    volumes:
+      - ./db/init.sql:/docker-entrypoint-initdb.d/init.sql
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d bank_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    network_mode: host
+
+  api:
+    build: ./api
+    container_name: fastapi_app
+    ports:
+      - "8000:8000"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: "postgresql://admin:admin@db:5432/bank_db"
+    network_mode: host
