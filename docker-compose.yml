@@ -31,7 +31,7 @@ services:
 
   api:
     build: ./api
-    container_name: fastapi_app
+    container_name: banking-api
     ports:
       - "8000:8000"
     depends_on:
@@ -40,3 +40,17 @@ services:
     environment:
       DATABASE_URL: "postgresql://admin:admin@db:5432/bank_db"
     network_mode: host
+
+  ai-agents:
+    build: ./ai-agents
+    container_name: ai-agents
+    depends_on:
+      - ollama
+    ports:
+      - "8001:8001"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+
+    volumes:
+      - ./ai-agents:/app
+    network_mode: host 
