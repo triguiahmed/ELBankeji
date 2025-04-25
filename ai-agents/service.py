@@ -14,7 +14,7 @@ logging.getLogger("urllib3").setLevel(logging.INFO)
 class JiraService:
     def __init__(self):
         
-        self.jira_url = "https://support.neoxam.com/"
+        self.jira_url = ""
         logger.info(f"JIRA_URL  {self.jira_url}")
 
     
