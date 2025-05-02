@@ -34,6 +34,7 @@ class Transaction(Base):
     date = Column(DateTime, default=datetime.utcnow)
     emitter = Column(String, nullable=False)
     receiver = Column(String, nullable=False)
+    amount = Column(Float, nullable=False)
 
 class Loan(Base):
     __tablename__ = "loans"
@@ -108,6 +109,6 @@ def get_transactions_history(emitter: str = Header(...), receiver: str = Header(
     transactions = db.query(Transaction).filter(
         Transaction.emitter == emitter,
         Transaction.receiver == receiver,
-        Transaction.date == date
+        # Transaction.date == date
     ).all()
     return {"transactions": transactions}

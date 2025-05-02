@@ -1,8 +1,9 @@
+version: '3.8'
+
 volumes:
   ollama: 
 
 services:
-
   ollama:
     build: ./ollama
     container_name: ollama
@@ -11,6 +12,10 @@ services:
     network_mode: host
     environment:
       - OLLAMA_HOST=0.0.0.0:11434
+      - OLLAMA_INTEL_GPU=true  # Enable Intel GPU support
+    devices:
+      - "/dev/dri:/dev/dri"  # Map the Intel GPU device
+
   db:
     image: postgres:17.2
     container_name: postgres_db
@@ -50,7 +55,6 @@ services:
       - "8001:8001"
     environment:
       - CHOKIDAR_USEPOLLING=true
-
     volumes:
       - ./ai-agents:/app
-    network_mode: host 
+    network_mode: host

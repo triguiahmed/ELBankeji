@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field, Optional
+from pydantic import BaseModel, Field
 from typing import Any, Literal
 import json
 import traceback
@@ -16,16 +16,14 @@ from beeai_framework.tools.types import StringToolOutput, ToolRunOptions
 
 import asyncio
 
-from service import BankAPIClient  # Assuming it's in service.py
+from bank_service import BankAPIClient  # Assuming it's in service.py
 
 logger = Logger(__name__)
 
 class BankToolInput(BaseModel):
     action: Literal["loan", "transfer", "balance", "history"]
-    user: Optional[str] = None
-    amount: Optional[float] = None
-    receiver: Optional[str] = None
-    date: Optional[str] = None  # ISO format
+    user: str = Field(description="The username of the connected user.")
+
 
 class BankTool(Tool[BankToolInput, ToolRunOptions, StringToolOutput]):
     name = "BankTool"
@@ -64,17 +62,23 @@ async def main() -> None:
     chat_model = ChatModel.from_name("ollama:granite3.2:2b-instruct-q4_K_M")
     bank_tool = BankTool()
     agent = ReActAgent(llm=chat_model, tools=[bank_tool], memory=UnconstrainedMemory(), stream=True)
-
-    instructions = """
-    You are a smart banking assistant. Given customer questions or commands, use the banking API to:
+    user = "John Doe"
+    import time
+    local_time = time.localtime()
+    date = time.strftime("%Y-%m-%d", local_time)
+    time_now = time.strftime("%H:%M", local_time)
+    
+    instructions = f"""
+    the date time now : {time_now}
+    You are a smart banking assistant you are interacting with the user: {user}. Given customer questions or commands, use the banking API to:
 
     - Retrieve current balances
     - Transfer money between accounts
     - Request new loans
     - Review transaction history for a specific date
 
-    Identify key actions from the user input. Your tool input must be structured with:
-    - action: one of [loan, transfer, balance, history]
+    Identify key actions from the user input such as (if provided):
+    - action: one of [loan, transfer, balance, history] (mandatory)
     - user: sender or account holder
     - receiver: for transfers or history
     - amount: for loan or transfer
@@ -85,6 +89,9 @@ async def main() -> None:
     Example: "Can you send 200 to alice from john?" -> transfer, user=john, receiver=alice, amount=200
 
     Respond clearly and informatively with the result.
+
+
+    you are only allowed to do actions that {user} have permissions to
     """
 
     user_icon = "👤"
@@ -92,7 +99,7 @@ async def main() -> None:
 
     await agent.memory.add(SystemMessage(content=instructions))
 
-    prompt = input(f"{user_icon} USER: ")
+    prompt = input(f"{user_icon} USER (John Doe): ")
     result = await agent.run(prompt)
     print(f"{agent_icon} AGENT: {result.result.text}")
 
@@ -101,3 +108,5 @@ if __name__ == "__main__":
         asyncio.run(main())
     except Exception as e:
         traceback.print_exc()
+#python bank_agent.py 
+#how much money do i have in my account ?
