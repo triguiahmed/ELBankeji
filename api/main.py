@@ -104,7 +104,7 @@ def get_balance(account: str = Header(...)):
     return {"balance": account_data.balance}
 
 @app.get("/transactions-history")
-def get_transactions_history(emitter: str = Header(...), receiver: str = Header(...), date: datetime = Header(...)):
+def get_transactions_history(emitter: str = Header(...), receiver: str = Header(...), date: datetime | None = Header(...)):
     db = SessionLocal()
     transactions = db.query(Transaction).filter(
         Transaction.emitter == emitter,

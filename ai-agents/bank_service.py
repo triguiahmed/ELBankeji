@@ -117,13 +117,10 @@ class BankAPIClient:
         except requests.exceptions.HTTPError as e:
             self.logger.error(f"HTTP error in money transfer: {e}")
             self.logger.debug(f"Response status: {e.response.status_code}, content: {e.response.text}")
-            raise
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Network error in money transfer: {e}")
-            raise
         except Exception as e:
             self.logger.error(f"Unexpected error in money transfer: {e}")
-            raise
     
     def get_balance(self, account: str) -> Dict[str, float]:
         """
@@ -152,13 +149,10 @@ class BankAPIClient:
         except requests.exceptions.HTTPError as e:
             self.logger.error(f"HTTP error in balance check: {e}")
             self.logger.debug(f"Response status: {e.response.status_code}, content: {e.response.text}")
-            raise
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Network error in balance check: {e}")
-            raise
         except Exception as e:
             self.logger.error(f"Unexpected error in balance check: {e}")
-            raise
     
     def get_transactions_history(self, emitter: str, receiver: str, date: datetime) -> Dict[str, List[Dict[str, Any]]]:
         """
@@ -194,13 +188,11 @@ class BankAPIClient:
         except requests.exceptions.HTTPError as e:
             self.logger.error(f"HTTP error in transaction history retrieval: {e}")
             self.logger.debug(f"Response status: {e.response.status_code}, content: {e.response.text}")
-            raise
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Network error in transaction history retrieval: {e}")
-            raise
         except Exception as e:
             self.logger.error(f"Unexpected error in transaction history retrieval: {e}")
-            raise
+
 
 
 # Example usage with logging configuration
