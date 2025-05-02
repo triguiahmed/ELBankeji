@@ -24,10 +24,9 @@ logger = Logger(__name__)
 
 class BankToolInput(BaseModel):
     action: Literal["loan", "transfer", "balance", "history"]
-    user: str = Field(description="The username of the connected user.")
-    amount: Optional[float] = Field(default=None, description="Amount of money involved, if applicable.")
-    receiver: Optional[str] = Field(default=None, description="Receiver of the money, if applicable.")
-
+    user: str 
+    amount: Optional[float] 
+    receiver: Optional[str] 
 
 class ScraperToolInput(BaseModel):
     url: str
@@ -111,18 +110,10 @@ async def main() -> None:
     time_now = time.strftime("%H:%M", local_time)
     
     instructions = f"""
-    You are a smart and helpful banking assistant, interacting with the user: "{user}".
-    The current date and time is: {time_now}.
-    You understand and can respond in English, French, Arabic, and the Tunisian dialect (which closely resembles Arabic and French).
-    Always reply clearly and informatively, using the same language that the user speaks.
-    Use the appropriate banking tool action when needed. Available actions are:
-    - 'loan': Request a loan of a specified amount.
-    - 'transfer': Send money to another user by specifying the amount and receiver.
-    - 'balance': Check the current account balance.
-    - 'history': Retrieve the user's transaction history (does not require amount or receiver).
-
-    Only request information from the user that is necessary for the chosen action.
-    Respond in a concise, friendly, and accurate manner.
+        the date time now : {time_now}
+        You are a smart banking assistant you are interacting with the user: "{user}".
+        You understand English, French, Arabic and Tunisian dialect (very similar to arabic and french)
+        Respond clearly and informatively with the result in the same language spoken by the user.
     """
 
     user_icon = "👤"
