@@ -13,6 +13,7 @@ from beeai_framework.logger import Logger
 from beeai_framework.tools.errors import ToolInputValidationError
 from beeai_framework.tools.tool import Tool
 from beeai_framework.tools.types import StringToolOutput, ToolRunOptions
+from newspaper import Article  # library to extract readable content
 
 import asyncio
 
@@ -24,6 +25,34 @@ class BankToolInput(BaseModel):
     action: Literal["loan", "transfer", "balance", "history"]
     user: str = Field(description="The username of the connected user.")
 
+
+class ScraperToolInput(BaseModel):
+    url: str
+
+class ScraperTool(Tool[ScraperToolInput, ToolRunOptions, StringToolOutput]):
+    name = "ScraperTool"
+    description = "Scrapes the main content from a webpage URL."
+    input_schema = ScraperToolInput
+
+    def __init__(self, options: dict[str, any] | None = None):
+        super().__init__(options)
+
+    def _create_emitter(self) -> Emitter:
+        return Emitter.root().child(namespace=["tool", "scraper"], creator=self)
+
+    async def _run(self, input: ScraperToolInput, options: ToolRunOptions | None, context: RunContext) -> StringToolOutput:
+        try:
+            article = Article(input.url)
+            article.download()
+            article.parse()
+            result = {
+                "title": article.title,
+                "text": article.text
+            }
+            return StringToolOutput(json.dumps(result))
+        except Exception as e:
+            traceback.print_exc()
+            return StringToolOutput(json.dumps({"error": f"Failed to scrape {input.url}: {str(e)}"}))
 
 class BankTool(Tool[BankToolInput, ToolRunOptions, StringToolOutput]):
     name = "BankTool"
@@ -61,7 +90,8 @@ class BankTool(Tool[BankToolInput, ToolRunOptions, StringToolOutput]):
 async def main() -> None:
     chat_model = ChatModel.from_name("ollama:granite3.2:2b-instruct-q4_K_M")
     bank_tool = BankTool()
-    agent = ReActAgent(llm=chat_model, tools=[bank_tool], memory=UnconstrainedMemory(), stream=True)
+    scraper_tool = ScraperTool()
+    agent = ReActAgent(llm=chat_model, tools=[bank_tool, scraper_tool], memory=UnconstrainedMemory(), stream=True)
     user = "John Doe"
     import time
     local_time = time.localtime()
