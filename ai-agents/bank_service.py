@@ -156,7 +156,7 @@ class BankAPIClient:
     
     def get_transactions_history(self, emitter: str) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Get transaction history between emitter and receiver on a specific date.
+        Get transaction history of a specific user.
         
         Args:
             emitter: connected user's username
@@ -225,11 +225,9 @@ if __name__ == "__main__":
         print(f"Account balance: {balance}")
         
         # Example: Get transaction history
-        specific_date = datetime(2025, 4, 25, 12, 0, 0)
         transactions = client.get_transactions_history(
             emitter="john_doe",
-            receiver="jane_smith", 
-            date=specific_date
+      
         )
         print(f"Transaction history: {transactions}")
     except Exception as e:
