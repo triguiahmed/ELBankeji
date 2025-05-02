@@ -154,25 +154,22 @@ class BankAPIClient:
         except Exception as e:
             self.logger.error(f"Unexpected error in balance check: {e}")
     
-    def get_transactions_history(self, emitter: str, receiver: str, date: datetime) -> Dict[str, List[Dict[str, Any]]]:
+    def get_transactions_history(self, emitter: str) -> Dict[str, List[Dict[str, Any]]]:
         """
-        Get transaction history between emitter and receiver on a specific date.
+        Get transaction history of a specific user.
         
         Args:
-            emitter: Sender's username
-            receiver: Receiver's username
-            date: Date of the transactions
+            emitter: connected user's username
+
             
         Returns:
             Dictionary containing the list of transactions
         """
         headers = {
             "emitter": emitter,
-            "receiver": receiver,
-            "date": date.isoformat()
         }
         
-        self.logger.info(f"Getting transaction history for '{emitter}' to '{receiver}' on {date.date()}")
+        self.logger.info(f"Getting transaction history for '{emitter}'")
         self.logger.debug(f"Request headers: {headers}")
         
         try:
@@ -228,11 +225,9 @@ if __name__ == "__main__":
         print(f"Account balance: {balance}")
         
         # Example: Get transaction history
-        specific_date = datetime(2025, 4, 25, 12, 0, 0)
         transactions = client.get_transactions_history(
             emitter="john_doe",
-            receiver="jane_smith", 
-            date=specific_date
+      
         )
         print(f"Transaction history: {transactions}")
     except Exception as e:

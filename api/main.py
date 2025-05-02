@@ -9,6 +9,7 @@ DATABASE_URL = "postgresql://admin:admin@localhost:5432/bank_db"
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
+from sqlalchemy import or_
 
 app = FastAPI()
 
@@ -104,11 +105,13 @@ def get_balance(account: str = Header(...)):
     return {"balance": account_data.balance}
 
 @app.get("/transactions-history")
-def get_transactions_history(emitter: str = Header(...), receiver: str = Header(...), date: datetime | None = Header(...)):
+def get_transactions_history(emitter: str = Header(...)):
     db = SessionLocal()
+
     transactions = db.query(Transaction).filter(
-        Transaction.emitter == emitter,
-        Transaction.receiver == receiver,
-        # Transaction.date == date
+        or_(
+            Transaction.emitter == emitter,
+            Transaction.receiver == emitter
+        )
     ).all()
     return {"transactions": transactions}
