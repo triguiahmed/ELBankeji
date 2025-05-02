@@ -13,6 +13,7 @@ from beeai_framework.logger import Logger
 from beeai_framework.tools.errors import ToolInputValidationError
 from beeai_framework.tools.tool import Tool
 from beeai_framework.tools.types import StringToolOutput, ToolRunOptions
+from typing import Optional
 
 import asyncio
 
@@ -23,6 +24,9 @@ logger = Logger(__name__)
 class BankToolInput(BaseModel):
     action: Literal["loan", "transfer", "balance", "history"]
     user: str = Field(description="The username of the connected user.")
+    amount: Optional[float] = Field(default=None, description="Amount of money involved, if applicable.")
+    receiver: Optional[str] = Field(default=None, description="Receiver of the money, if applicable.")
+
 
 
 class BankTool(Tool[BankToolInput, ToolRunOptions, StringToolOutput]):
@@ -43,21 +47,30 @@ class BankTool(Tool[BankToolInput, ToolRunOptions, StringToolOutput]):
     async def _run(self, input: BankToolInput, options: ToolRunOptions | None, context: RunContext) -> StringToolOutput:
         try:
             if input.action == "loan":
+                if input.amount is None:
+                    raise ToolInputValidationError("Amount is required for loan.")
                 result = self.bank_client.request_loan(input.user, input.amount)
+
             elif input.action == "transfer":
+                if input.amount is None or input.receiver is None:
+                    raise ToolInputValidationError("Amount and receiver are required for transfer.")
                 result = self.bank_client.send_money(input.user, input.receiver, input.amount)
+
             elif input.action == "balance":
                 result = self.bank_client.get_balance(input.user)
+
             elif input.action == "history":
-                from datetime import datetime
-                parsed_date = datetime.fromisoformat(input.date) if input.date else None
-                result = self.bank_client.get_transactions_history(input.user, input.receiver, parsed_date)
+                result = self.bank_client.get_transactions_history(input.user)
+
             else:
                 raise ToolInputValidationError("Invalid action provided.")
+
             return StringToolOutput(json.dumps(result))
+
         except Exception as e:
             logger.error(f"Error in BankTool: {e}")
             raise ToolInputValidationError(f"Failed to perform banking operation: {e}")
+
 async def main() -> None:
     chat_model = ChatModel.from_name("ollama:granite3.2:2b-instruct-q4_K_M")
     bank_tool = BankTool()
@@ -69,39 +82,29 @@ async def main() -> None:
     time_now = time.strftime("%H:%M", local_time)
     
     instructions = f"""
-    the date time now : {time_now}
-    You are a smart banking assistant you are interacting with the user: {user}. Given customer questions or commands, use the banking API to:
+    You are a smart and helpful banking assistant, interacting with the user: "{user}".
+    The current date and time is: {time_now}.
+    You understand and can respond in English, French, Arabic, and the Tunisian dialect (which closely resembles Arabic and French).
+    Always reply clearly and informatively, using the same language that the user speaks.
+    Use the appropriate banking tool action when needed. Available actions are:
+    - 'loan': Request a loan of a specified amount.
+    - 'transfer': Send money to another user by specifying the amount and receiver.
+    - 'balance': Check the current account balance.
+    - 'history': Retrieve the user's transaction history (does not require amount or receiver).
 
-    - Retrieve current balances
-    - Transfer money between accounts
-    - Request new loans
-    - Review transaction history for a specific date
-
-    Identify key actions from the user input such as (if provided):
-    - action: one of [loan, transfer, balance, history] (mandatory)
-    - user: sender or account holder
-    - receiver: for transfers or history
-    - amount: for loan or transfer
-    - date: ISO format (optional, for history)
-
-    Your job is to interpret natural language and call the right tool action.
-
-    Example: "Can you send 200 to alice from john?" -> transfer, user=john, receiver=alice, amount=200
-
-    Respond clearly and informatively with the result.
-
-
-    you are only allowed to do actions that {user} have permissions to
+    Only request information from the user that is necessary for the chosen action.
+    Respond in a concise, friendly, and accurate manner.
     """
 
     user_icon = "👤"
     agent_icon = "🏦"
 
     await agent.memory.add(SystemMessage(content=instructions))
-
-    prompt = input(f"{user_icon} USER (John Doe): ")
-    result = await agent.run(prompt)
-    print(f"{agent_icon} AGENT: {result.result.text}")
+    while True:
+        prompt = input(f"{user_icon} USER (John Doe): ")
+        result = await agent.run(prompt)
+        print(f"{agent_icon} AGENT: {result.result.text}")
+    
 
 if __name__ == "__main__":
     try:
@@ -109,4 +112,16 @@ if __name__ == "__main__":
     except Exception as e:
         traceback.print_exc()
 #python bank_agent.py 
+
 #how much money do i have in my account ?
+#combien j'ai de l'argent dans mon compte bancaire
+#كم عندي مال في الحساب 
+#قداه عندي فلوس
+
+
+#what is my transaction history?
+#Donner moi mon historique de transaction?
+#اعطيني سجل حسابي البنكي
+#اعطيني historique متاعي
+
+
