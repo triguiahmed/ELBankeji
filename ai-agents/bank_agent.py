@@ -130,26 +130,17 @@ async def main() -> None:
         You are a smart banking assistant you are interacting with the user: "{user}".
 
 
-        these are FAQs URL to scrape if needed:
-        https://www.biat.com.tn/faq
-        https://www.banquezitouna.com/fr/faq
-        https://www.bank-abc.com/fr/CountrySites/Tunis/AboutABC/faqs
-        https://www.webank.com.tn/fr/faq
-        https://www.wifakbank.com/faq
-        https://albaraka.com.tn/fr/faq
-        https://www.mybiat.tn/fr/faq
-        https://online.wifakbank.com/Connect/clientassets/WIFAK/html/Fr/faq.html
-    
+
         You understand English, French, Arabic and Tunisian dialect (very similar to arabic and french)
         Respond clearly and informatively with the result in the same language spoken by the user.
     """
 
     user_icon = "👤"
     agent_icon = "🏦"
-
+    
     await agent.memory.add(SystemMessage(content=instructions))
     await agent.memory.add(SystemMessage(content="""
-            You can use the 'BankTool' to handle user requests related to banking.
+            You can use the 'BankTool' to handle user requests related to banking actions.
 
             Available actions:
             - 'request-loan': Request a loan amount
@@ -159,6 +150,24 @@ async def main() -> None:
 
             Only use the tool when needed and only fill the necessary fields.
             """))
+
+    await agent.memory.add(SystemMessage(content="""
+            You can use the 'ScraperTool' to handle user requests related to FAQs.
+
+            these are FAQs URL to scrape if needed:
+            https://www.biat.com.tn/faq
+
+            Only use the tool when needed and only fill the necessary fields.
+            """))
+
+
+
+
+
+     ####
+
+
+
     # await agent.memory.add(SystemMessage(content=faqs))
     while True:
         prompt = input(f"{user_icon} USER (John Doe): ")
@@ -183,6 +192,19 @@ if __name__ == "__main__":
 #Donner moi mon historique de transaction?
 #اعطيني سجل حسابي البنكي
 #اعطيني historique متاعي
+
+
+#I want a loan of 100
+#Je veux un prêt de 100
+#نحب قرض بـ 100
+#نحب ناخو قرض متاع 100
+
+
+
+#I want to send 200 to Jane Smith
+#Je veux envoyer 200 à Jane Smith
+#نحب نبعث 200 لـ Jane Smith
+#نحب نصيفي 200 لـ Jane Smith
 
 
 

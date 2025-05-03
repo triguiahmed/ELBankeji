@@ -3,7 +3,6 @@ version: '3.8'
 volumes:
   ollama: 
 
-
 services:
   ollama:
     build: ./ollama
@@ -13,14 +12,6 @@ services:
     network_mode: host
     environment:
       - OLLAMA_HOST=0.0.0.0:11434
-      #- OLLAMA_NVIDIA_GPU=true  # Enable NVIDIA GPU support
-    #devices:
-      #- "/dev/nvidia0:/dev/nvidia0"  # Map the NVIDIA GPU device
-      #- "/dev/nvidiactl:/dev/nvidiactl"  # Map the NVIDIA control device
-      #- "/dev/nvidia-uvm:/dev/nvidia-uvm"  # Map the NVIDIA user mode device
-    #volumes:
-      #- "/usr/local/nvidia/lib64:/usr/local/nvidia/lib64"  # Map the NVIDIA library
-      #- "/usr/local/nvidia/bin:/usr/local/nvidia/bin"  # Map the NVIDIA binaries
 
   db:
     image: postgres:17.2
@@ -64,3 +55,12 @@ services:
     volumes:
       - ./ai-agents:/app
     network_mode: host
+
+  angular-chatbot:
+    build: ./angular-chatbot
+    container_name: angular-chatbot
+    ports:
+      - "8080:80"
+    depends_on:
+      - ai-agents
+    network_mode: host  

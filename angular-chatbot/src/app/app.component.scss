@@ -1,0 +1,102 @@
+@import '/src/colors';
+
+.app-header {
+    height: 15%;
+    background-color: $black;
+    justify-content: space-between;
+    padding: 0 16px;
+
+    .header-title {
+        width: 10%;
+        height: 100%;
+        text-align: center;
+        color: $white;
+        font-size: 2vh;
+    }
+
+    .header-actions {
+        width: 80%;
+
+        .chat-buttons {
+            width: 100%;
+            display: flex;
+            flex-direction: row;
+            justify-content: center;
+            gap: 3%;
+            height:30%;
+            border-radius: 0;
+            border: none;
+
+            .button-container {
+                display: flex;
+                flex-direction: column;
+                min-width: 15%;
+                text-align: center;
+
+                input { 
+                    display: none;
+                }
+                
+                label {
+                    font-size: 1.8vh;
+                    padding: 0.5em 0.5em;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    background: $white;
+                    border-radius: 2px;
+                    color: $black;
+                }
+                
+                label:hover {
+                    opacity: 0.8;
+                }
+                
+                input:checked + label{
+                    background: $blue;
+                }
+            }
+        }
+    }
+
+    .app-socials {
+        width: 10%;
+        justify-content: center;
+
+        .socials-icons{
+            gap: 20%;
+        }
+
+        .icon {
+            -webkit-filter: invert(100%);
+            filter: invert(100%);
+            width: 2.5vh;
+            cursor: pointer;
+        }
+
+        .copy-alert {
+            position: absolute;
+            top: 16%;
+            width: 10%;
+            color: $blue;
+            font-size: 2vh;
+            font-weight: 500;
+            animation:copy-alert 2s 1;
+            -webkit-animation:copy-alert 2s 1;
+            animation-fill-mode: forwards;
+        
+            animation-delay:2s;
+            -webkit-animation-delay:1s; /* Safari and Chrome */
+            -webkit-animation-fill-mode: forwards;
+        }
+        
+        @keyframes copy-alert{
+            from {opacity :1;}
+            to {opacity :0;}
+        }
+        
+        @-webkit-keyframes copy-alert{
+            from {opacity :1;}
+            to {opacity :0;}
+        }
+    }    
+}
