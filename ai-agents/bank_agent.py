@@ -23,7 +23,15 @@ from bank_service import BankAPIClient  # Assuming it's in service.py
 logger = Logger(__name__)
 
 class BankToolInput(BaseModel):
-    action: Literal["loan", "transfer", "balance", "history"]
+    """
+        Represents an action performed by a user in a banking system.
+
+        - "request-loan": Ask for a loan (requires `amount`)
+        - "make-transfer": Send money to another user (requires `amount` and `receiver`)
+        - "get-balance": Get current account balance
+        - "get-transaction-history": View the list of past transactions
+    """
+    action: Literal["request-loan", "make-transfer", "get-balance", "get-transaction-history"]
     user: str 
     amount: Optional[float] 
     receiver: Optional[str] 
@@ -58,7 +66,13 @@ class ScraperTool(Tool[ScraperToolInput, ToolRunOptions, StringToolOutput]):
 
 class BankTool(Tool[BankToolInput, ToolRunOptions, StringToolOutput]):
     name = "BankTool"
-    description = "Interact with the banking API to retrieve balances, make transfers, request loans, and view transaction history."
+    description = (
+    "This tool allows users to perform banking operations:\n"
+    "- 'request-loan': Request a loan (needs 'amount')\n"
+    "- 'make-transfer': Transfer funds (needs 'amount' and 'receiver')\n"
+    "- 'get-balance': Show current account balance\n"
+    "- 'get-transaction-history': Show the user's transaction history"
+)
     input_schema = BankToolInput
 
     def __init__(self, options: dict[str, Any] | None = None) -> None:
@@ -73,20 +87,22 @@ class BankTool(Tool[BankToolInput, ToolRunOptions, StringToolOutput]):
 
     async def _run(self, input: BankToolInput, options: ToolRunOptions | None, context: RunContext) -> StringToolOutput:
         try:
-            if input.action == "loan":
+            print("## TOOOL INPUT")
+            print(input)
+            if input.action == "request-loan":
                 if input.amount is None:
                     raise ToolInputValidationError("Amount is required for loan.")
                 result = self.bank_client.request_loan(input.user, input.amount)
 
-            elif input.action == "transfer":
+            elif input.action == "make-transfer":
                 if input.amount is None or input.receiver is None:
                     raise ToolInputValidationError("Amount and receiver are required for transfer.")
                 result = self.bank_client.send_money(input.user, input.receiver, input.amount)
 
-            elif input.action == "balance":
+            elif input.action == "get-balance":
                 result = self.bank_client.get_balance(input.user)
 
-            elif input.action == "history":
+            elif input.action == "get-transaction-history":
                 result = self.bank_client.get_transactions_history(input.user)
 
             else:
@@ -112,6 +128,18 @@ async def main() -> None:
     instructions = f"""
         the date time now : {time_now}
         You are a smart banking assistant you are interacting with the user: "{user}".
+
+
+        these are FAQs URL to scrape if needed:
+        https://www.biat.com.tn/faq
+        https://www.banquezitouna.com/fr/faq
+        https://www.bank-abc.com/fr/CountrySites/Tunis/AboutABC/faqs
+        https://www.webank.com.tn/fr/faq
+        https://www.wifakbank.com/faq
+        https://albaraka.com.tn/fr/faq
+        https://www.mybiat.tn/fr/faq
+        https://online.wifakbank.com/Connect/clientassets/WIFAK/html/Fr/faq.html
+    
         You understand English, French, Arabic and Tunisian dialect (very similar to arabic and french)
         Respond clearly and informatively with the result in the same language spoken by the user.
     """
@@ -120,6 +148,18 @@ async def main() -> None:
     agent_icon = "🏦"
 
     await agent.memory.add(SystemMessage(content=instructions))
+    await agent.memory.add(SystemMessage(content="""
+            You can use the 'BankTool' to handle user requests related to banking.
+
+            Available actions:
+            - 'request-loan': Request a loan amount
+            - 'make-transfer': Transfer money to another person
+            - 'get-balance': Display account balance
+            - 'get-transaction-history': List past transactions (date, amount, type)
+
+            Only use the tool when needed and only fill the necessary fields.
+            """))
+    # await agent.memory.add(SystemMessage(content=faqs))
     while True:
         prompt = input(f"{user_icon} USER (John Doe): ")
         result = await agent.run(prompt)
@@ -145,3 +185,6 @@ if __name__ == "__main__":
 #اعطيني historique متاعي
 
 
+
+#Scraping
+#LA BIAT EMET-ELLE DES OBLIGATIONS ?
