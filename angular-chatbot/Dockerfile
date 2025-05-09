@@ -1,32 +1,16 @@
-# Stage 1: Build the Angular app
-FROM node:16 as builder
+FROM node:14
 
 WORKDIR /app
 
-# Copy package.json and package-lock.json first to install dependencies
-COPY package*.json ./
 
-# Install dependencies
-RUN npm install
-
-# Copy the rest of the application
+# Copy Angular project files
+COPY package*.json angular.json tsconfig.json ./
+COPY src ./src
+COPY e2e ./e2e 
 COPY . .
 
-# Build the Angular project
+RUN npm install
 
-RUN npm run build -- --base-href /angular-chatbot/
+EXPOSE 4200
 
-# Stage 2: Serve the app with Nginx
-FROM nginx:alpine
-
-# Copy the build artifacts to the Nginx HTML directory
-COPY --from=builder /app/src /usr/share/nginx/html
-
-# Copy a default nginx config file
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Expose port
-EXPOSE 80
-
-# Start Nginx
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["ng", "serve", "--host", "0.0.0.0", "--poll=2000"]

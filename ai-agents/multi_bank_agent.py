@@ -109,12 +109,21 @@ async def main():
     You understand English, French, Arabic and Tunisian dialects.
     Respond in the language used by the user.
     """
+    workflow.add_agent(
+        name="Support Agent",
+        role="Understand user intent.",
+        instructions=base_context + """
+        You must understand the user message and class the intent to an action request or question to respond and pass the intent to the other agents
+        """,
+        tools=[],
+        llm=chat_model,
+    )
 
     workflow.add_agent(
         name="BankAgent",
         role="Handles banking requests.",
         instructions=base_context + """
-        Use BankTool to:
+        If the user query is an action request use BankTool to:
         - request-loan (amount required)
         - make-transfer (amount and receiver required)
         - get-balance
@@ -127,9 +136,9 @@ async def main():
 
     workflow.add_agent(
         name="FAQScraper",
-        role="Scrapes bank FAQs to answer queries.",
+        role="Scrapes bank FAQs to answer banking related question queries.",
         instructions=base_context + """
-        Use ScraperTool to extract content from FAQ pages when asked about banking policies or general info.
+        When asked about banking policies or general info use ScraperTool to extract content from FAQ pages when asked about banking policies or general info.
         Example pages:
         - https://www.biat.com.tn/faq
         - https://www.banquezitouna.com/fr/faq
