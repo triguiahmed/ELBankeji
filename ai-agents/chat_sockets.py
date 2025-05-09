@@ -2,28 +2,44 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from beeai_framework.workflows.agent import AgentWorkflowInput
 from multi_test import create_workflow
-
+import time
 router = APIRouter()
 
 
 
 @router.websocket("/chat")
 async def websocket_endpoint(websocket: WebSocket):
-    
+    user = websocket.query_params.get("user", "Anonymous")
     print("WebSocket connection established")
     
     # 🟩 Initialize workflow ONCE globally
-    workflow = create_workflow(user="John Doe")
+    workflow = create_workflow(user=user)
     await websocket.accept()
     try:
         while True:
             user_input = await websocket.receive_text()
             print(f"👤 USER: {user_input}")
 
-            # Run the workflow for each message
+            local_time = time.localtime()
+            date = time.strftime("%Y-%m-%d", local_time)
+            time_now = time.strftime("%H:%M", local_time)
+
+            base_context = f"""
+                You are assisting user: {user}. Current date: {date}, time: {time_now}.
+                You understand English, French, Arabic, and Tunisian dialects.
+                Always respond using the same language or dialect the user used.
+                """
+
             result = await workflow.run(
                 inputs=[
-                    AgentWorkflowInput(prompt=base_context  + f"Understand the user input : '{user_input}'. Recognize the input language and  Respond in the same language or dialect of the input. "),
+                    AgentWorkflowInput(
+                        prompt=base_context + f"""
+                    Analyze this user message: '{user_input}'.
+                    Detect the user’s intent (e.g., check balance, see transactions, send money, ask FAQ).
+                    Identify the language or dialect used, and route to the proper agent.
+                    Ensure the final response is in the same language or dialect.
+                    """
+                    ),
                 ]
             )
 
