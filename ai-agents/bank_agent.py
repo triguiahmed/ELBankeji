@@ -180,33 +180,3 @@ if __name__ == "__main__":
         asyncio.run(main())
     except Exception as e:
         traceback.print_exc()
-#python bank_agent.py 
-
-#how much money do i have in my account ?
-#combien j'ai de l'argent dans mon compte bancaire
-#كم عندي مال في الحساب 
-#قداه عندي فلوس
-
-
-#what is my transaction history?
-#Donner moi mon historique de transaction?
-#اعطيني سجل حسابي البنكي
-#اعطيني historique متاعي
-
-
-#I want a loan of 100
-#Je veux un prêt de 100
-#نحب قرض بـ 100
-#نحب ناخو قرض متاع 100
-
-
-
-#I want to send 200 to Jane Smith
-#Je veux envoyer 200 à Jane Smith
-#نحب نبعث 200 لـ Jane Smith
-#نحب نصيفي 200 لـ Jane Smith
-
-
-
-#Scraping
-#LA BIAT EMET-ELLE DES OBLIGATIONS ?

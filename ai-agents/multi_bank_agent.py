@@ -109,26 +109,15 @@ async def main():
     You understand English, French, Arabic and Tunisian dialects.
     Respond in the language used by the user.
     """
-    workflow.add_agent(
-        name="Support Agent",
-        role="Understand user intent.",
-        instructions=base_context + """
-        You must understand the user message and class the intent to an action request or question to respond and pass the intent to the other agents
-        """,
-        tools=[],
-        llm=chat_model,
-    )
 
     workflow.add_agent(
         name="BankAgent",
         role="Handles banking requests.",
         instructions=base_context + """
-        If the user query is an action request use BankTool to:
-        - request-loan (amount required)
+        Only interfere when the goal is to make banking actions:
         - make-transfer (amount and receiver required)
         - get-balance
         - get-transaction-history
-        Only use relevant fields. Respond with confirmation and results.
         """,
         tools=[BankTool()],
         llm=chat_model,
@@ -138,11 +127,11 @@ async def main():
         name="FAQScraper",
         role="Scrapes bank FAQs to answer banking related question queries.",
         instructions=base_context + """
-        When asked about banking policies or general info use ScraperTool to extract content from FAQ pages when asked about banking policies or general info.
-        Example pages:
+        Only interfere when asked about banking policies or general info, you have FAQ URL pages to extract data from:
         - https://www.biat.com.tn/faq
         - https://www.banquezitouna.com/fr/faq
         - https://www.bank-abc.com/fr/CountrySites/Tunis/AboutABC/faqs
+
         """,
         tools=[ScraperTool()],
         llm=chat_model,
@@ -152,8 +141,7 @@ async def main():
         name="FinalResponder",
         role="Summarizes and formats final answer to user.",
         instructions=base_context + """
-        Take all intermediate results and generate a clear and helpful response.
-        Respond in the same language as the user.
+        Take all intermediate results and generate a clear and helpful response in the same language or dialect of the input.
         """,
         llm=chat_model,
     )
@@ -162,12 +150,13 @@ async def main():
     agent_icon = "🏦"
 
     while True:
+        result=None
         user_input = input(f"{user_icon} USER ({user}): ")
 
         result = await workflow.run(
             inputs=[
                 AgentWorkflowInput(prompt=user_input),
-                AgentWorkflowInput(prompt=f"[Synthesizer] Summarize everything and reply to: {user_input}"),
+                AgentWorkflowInput(prompt=f"Summarize everything of {user_input} and class the intent to an action request or question to respond and pass the intent to the other agents.  "),
             ]
         )
 
@@ -179,3 +168,26 @@ if __name__ == "__main__":
         asyncio.run(main())
     except Exception:
         traceback.print_exc()
+#python bank_agent.py 
+
+#               how much money do i have in my account ?
+#                   combien j'ai de l'argent dans mon compte bancaire
+#                   كم عندي مال في الحساب 
+#                 قداه عندي فلوس
+
+
+#                 what is my transaction history?
+#                 Donner moi mon historique de transaction?
+#                 اعطيني historique متاعي
+
+
+
+
+#   I want to send 200 to Jane Smith
+#   Je veux envoyer 200 à Jane Smith
+#   نحب نبعث 200 لـ Jane Smith
+
+
+
+#Scraping
+#LA BIAT EMET-ELLE DES OBLIGATIONS ?
