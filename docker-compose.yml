@@ -58,8 +58,8 @@ services:
   ai-agents:
     build: ./ai-agents
     container_name: ai-agents
-    depends_on:
-      - ollama
+    # depends_on:
+    #   - ollama
     ports:
       - "127.0.0.1:8001:8001"
     environment:
