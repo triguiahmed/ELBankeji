@@ -1,7 +1,5 @@
-version: '3.8'
-
 volumes:
-  ollama: 
+  ollama_models: 
 
 
 services:
@@ -13,6 +11,11 @@ services:
     network_mode: host
     environment:
       - OLLAMA_HOST=0.0.0.0:11434
+    volumes:
+      - ollama_models:/root/.ollama
+
+
+    
       #- OLLAMA_NVIDIA_GPU=true  # Enable NVIDIA GPU support
     #devices:
       #- "/dev/nvidia0:/dev/nvidia0"  # Map the NVIDIA GPU device
@@ -58,7 +61,7 @@ services:
     depends_on:
       - ollama
     ports:
-      - "8001:8001"
+      - "127.0.0.1:8001:8001"
     environment:
       - CHOKIDAR_USEPOLLING=true
     volumes:

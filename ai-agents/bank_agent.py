@@ -182,7 +182,7 @@ if __name__ == "__main__":
 #what is my transaction history?
 #Donner moi mon historique de transaction?
 #اعطيني سجل حسابي البنكي
-#اعطيني historique متاعي
+# اعطيني historique متاعي
 
 
 
