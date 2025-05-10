@@ -182,36 +182,10 @@ def create_workflow(user: str) -> AgentWorkflow:
     local_time = time.localtime()
     date = time.strftime("%Y-%m-%d", local_time)
     time_now = time.strftime("%H:%M", local_time)
-  
-    base_context = f"""
-    You are assisting user: {user}. Current date: {date}, time: {time_now}.
-    You understand English, French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
-    Always respond in the language or dialect used by the user.
-    """
-    workflow.add_agent(
-        name="BankInfoAgent",
-        role="Answers questions about banking policies, products, and procedures using FAQ pages.",
-        instructions=base_context + """
-        Handle user questions related to banking policies, products, and general information.
- 
-        Examples of valid inputs:
-        - Questions about bonds, interest rates, types of accounts
-        - Anything beginning with "Does the bank...", "Can I...", "What is the policy..."
- 
-        In those cases, use the ScraperTool to search the following FAQ pages:
-        - https://www.biat.com.tn/faq
-        - https://www.banquezitouna.com/fr/faq
-        - https://www.bank-abc.com/fr/CountrySites/Tunis/AboutABC/faqs
- 
-        Respond with a clear answer in the user's language. If no relevant info is found, politely say so.
-        """,
-        tools=[ScraperTool()],
-        llm=chat_model,
-    )
     workflow.add_agent(
         name="BankAgent",
-        role="Handles transactional banking requests.",
-        instructions=base_context + """
+        role="BankAgent that Handles transactional banking requests.",
+        instructions="""
         Only handle transactional requests:
         - Check account balance
         - View transaction history
@@ -222,15 +196,40 @@ def create_workflow(user: str) -> AgentWorkflow:
         - Questions about banking products, policies, procedures
         - Legal information
         - FAQ-related topics
- 
-        If the input is not clearly a transactional request, do not respond and allow other agents to handle it.
-        """,
+         """,
         tools=[
             GetTransactionHistoryTool(),
             MakeTransferTool(),
             GetBalanceTool(),
             RequestLoanTool(),
         ],
+        llm=chat_model,
+    )
+
+    workflow.add_agent(
+        name="BankInfoAgent",
+        role="BankInfoAgent that answers questions about banking policies, products, and procedures using FAQ pages.",
+        instructions="""
+        Handle user questions related to banking policies, products, and general information.
+
+        Use the ScraperTool to search the following FAQ pages:
+        - https://www.biat.com.tn/faq
+        - https://www.banquezitouna.com/fr/faq
+        - https://www.bank-abc.com/fr/CountrySites/Tunis/AboutABC/faqs
+        Do NOT interfere to:
+        - Check account balance
+        - View transaction history
+        - Make a money transfer
+        - Request a loan
+        """,
+        tools=[ScraperTool()],
+        llm=chat_model,
+    )
+    workflow.add_agent(
+        name="DataSynthesizer",
+        role="A meticulous and creative data synthesizer",
+        instructions="""You can combine disparate information into a final coherent summary."
+        Respond with a clear answer in the user's language. If no relevant info is found, politely say so.""",
         llm=chat_model,
     )
  

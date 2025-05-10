@@ -21,29 +21,33 @@ async def websocket_endpoint(websocket: WebSocket):
 
             local_time = time.localtime()
             date = time.strftime("%Y-%m-%d", local_time)
-            time_now = time.strftime("%H:%M", local_time)
-  
-             
-            base_context = f"""
-            You are assisting user: {user}. Current date: {date}, time: {time_now}.
-            You understand English, French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
-            Always respond in the language or dialect used by the user.
-            """
-        
+            time_now = time.strftime("%H:%M", local_time)      
         
             result = await workflow.run(
                 inputs=[
                     AgentWorkflowInput(
-                    prompt=base_context + f"""
-                    Understand this user message: '{user_input}'.
-                    - Identify the user’s **intent** (transactional or informational).
-                    - If transactional (e.g., balance, transfer, history), route to BankAgent.
-                    - If informational (e.g., policies, bank products, obligations), route to FAQScraper.
-        
-                    Always respond in the same language or dialect as the user.
+                    prompt=f"""
+                    You are assisting the user: {user}. Current date: {date}, time: {time_now}.
+                    You understand English, French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
+                    Identify the user intent for this message: [USER MESSAGE START]{user_input}[USER MESSAGE END].
+                    - If it's transactional (e.g., balance check, transfer, transaction history) respond.
+                    
+                    - Always respond in the user's language or dialect.
                     """
                     ),
- 
+                    AgentWorkflowInput(
+                            prompt=f"""
+                            You understand English, French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
+                            Identify the user intent for this message: [USER MESSAGE START]{user_input}[USER MESSAGE END].
+                            - If it's informational or policy-related (e.g., about banking products, obligations, or procedures), route to BankInfoAgent.
+                        
+                            - Always respond in the user's language or dialect.
+                            """
+                            ),
+                     AgentWorkflowInput(
+                            prompt=f"Summarize the response for {user_input}.",
+                            expected_output=f"A paragraph that respond to {user_input} in the user's language or dialect.",
+                        ),
                 ]
             )
 
