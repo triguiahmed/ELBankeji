@@ -68,16 +68,16 @@ services:
       - ./ai-agents:/app
     network_mode: host
 
-  angular-chatbot:
-    build: ./angular-chatbot
-    container_name: angular-chatbot
-    ports:
-      - "4200:4200"
-    volumes:
-      - .:/app
-      - /app/node_modules # Avoid overwriting node_modules
-    stdin_open: true
-    tty: true
-    depends_on:
-      - ai-agents
-    network_mode: host  
+  # angular-chatbot:
+  #   build: ./angular-chatbot
+  #   container_name: angular-chatbot
+  #   ports:
+  #     - "4200:4200"
+  #   volumes:
+  #     - .:/app
+  #     - /app/node_modules # Avoid overwriting node_modules
+  #   stdin_open: true
+  #   tty: true
+  #   depends_on:
+  #     - ai-agents
+  #   network_mode: host  

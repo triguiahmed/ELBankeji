@@ -61,8 +61,9 @@ class BankAPIClient:
         
         try:
             response = requests.post(f"{self.base_url}/request-loan", json=payload)
-            response.raise_for_status()
+            
             response_data = response.json()
+            response.raise_for_status()
             
             self.logger.info(f"Loan request successful: loan_id={response_data.get('loan_id')}")
             self.logger.debug(f"Response data: {response_data}")
@@ -71,13 +72,13 @@ class BankAPIClient:
         except requests.exceptions.HTTPError as e:
             self.logger.error(f"HTTP error in loan request: {e}")
             self.logger.debug(f"Response status: {e.response.status_code}, content: {e.response.text}")
-            raise
+            return response_data
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Network error in loan request: {e}")
-            raise
+            return response_data
         except Exception as e:
             self.logger.error(f"Unexpected error in loan request: {e}")
-            raise
+            return response_data
     
     def send_money(self, emitter: str, receiver: str, amount: float, date: Optional[datetime] = None) -> Dict[str, Any]:
         """
@@ -107,20 +108,24 @@ class BankAPIClient:
         
         try:
             response = requests.post(f"{self.base_url}/send-money", json=payload)
-            response.raise_for_status()
             response_data = response.json()
+            response.raise_for_status()
+            
             
             self.logger.info(f"Money transfer successful: transaction_id={response_data.get('transaction_id')}")
             self.logger.debug(f"Response data: {response_data}")
             
             return response_data
         except requests.exceptions.HTTPError as e:
-            self.logger.error(f"HTTP error in money transfer: {e}")
-            self.logger.debug(f"Response status: {e.response.status_code}, content: {e.response.text}")
+            self.logger.error(f"HTTP error in money transfer: {e}, {response_data}")
+            self.logger.debug(f"Response status: {e.response.status_code}, content: {e.response}")
+            return response_data
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Network error in money transfer: {e}")
+            return response_data
         except Exception as e:
             self.logger.error(f"Unexpected error in money transfer: {e}")
+            return response_data
     
     def get_balance(self, account: str) -> Dict[str, float]:
         """
@@ -139,8 +144,9 @@ class BankAPIClient:
         
         try:
             response = requests.get(f"{self.base_url}/balance", headers=headers)
-            response.raise_for_status()
             response_data = response.json()
+            response.raise_for_status()
+            
             
             self.logger.info(f"Balance retrieved successfully: {response_data.get('balance')}")
             self.logger.debug(f"Response data: {response_data}")
@@ -149,10 +155,13 @@ class BankAPIClient:
         except requests.exceptions.HTTPError as e:
             self.logger.error(f"HTTP error in balance check: {e}")
             self.logger.debug(f"Response status: {e.response.status_code}, content: {e.response.text}")
+            return response_data
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Network error in balance check: {e}")
+            return response_data
         except Exception as e:
             self.logger.error(f"Unexpected error in balance check: {e}")
+            return response_data
     
     def get_transactions_history(self, emitter: str) -> Dict[str, List[Dict[str, Any]]]:
         """
@@ -174,8 +183,8 @@ class BankAPIClient:
         
         try:
             response = requests.get(f"{self.base_url}/transactions-history", headers=headers)
-            response.raise_for_status()
             response_data = response.json()
+            response.raise_for_status()
             
             num_transactions = len(response_data.get("transactions", []))
             self.logger.info(f"Retrieved {num_transactions} transactions")
@@ -185,10 +194,13 @@ class BankAPIClient:
         except requests.exceptions.HTTPError as e:
             self.logger.error(f"HTTP error in transaction history retrieval: {e}")
             self.logger.debug(f"Response status: {e.response.status_code}, content: {e.response.text}")
+            return response_data
         except requests.exceptions.RequestException as e:
             self.logger.error(f"Network error in transaction history retrieval: {e}")
+            return response_data
         except Exception as e:
             self.logger.error(f"Unexpected error in transaction history retrieval: {e}")
+            return response_data
 
 
 

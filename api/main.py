@@ -73,12 +73,12 @@ def send_money(transaction: SendMoneyRequest):
     
     emitter_account = db.query(Account).filter(Account.owner == transaction.emitter).first()
     if not emitter_account or emitter_account.balance < transaction.amount:
-        raise HTTPException(status_code=400, detail="Insufficient balance")
+        raise HTTPException(status_code=400, detail=f"Insufficient balance, you can't send the ammount of {transaction.amount} to {transaction.receiver} , You have only {emitter_account.balance}")
     
     emitter_account.balance -= transaction.amount
     receiver_account = db.query(Account).filter(Account.owner == transaction.receiver).first()
     if not receiver_account:
-        raise HTTPException(status_code=404, detail="Receiver account not found")
+        raise HTTPException(status_code=404, detail="Receiver account not found in the banking system, please check the account name")
     receiver_account.balance += transaction.amount
     
     db_transaction = Transaction(
@@ -90,8 +90,10 @@ def send_money(transaction: SendMoneyRequest):
     db.add(db_transaction)
     db.commit()
     
+    emitter_account = db.query(Account).filter(Account.owner == transaction.emitter).first()
+    
     return {
-        "message": "Money sent successfully",
+        "message": "Transaction successful, the ammount of {transaction.amount} has been sent to {transaction.receiver}, the transaction id is {db_transaction.id}, and the date is {transaction.date}, Your new balance is {emitter_account.balance}",
         "transaction_id": db_transaction.id,
         "amount_tnd": transaction.amount  
     }
@@ -101,7 +103,7 @@ def get_balance(account: str = Header(...)):
     db = SessionLocal()
     account_data = db.query(Account).filter(Account.owner == account).first()
     if not account_data:
-        raise HTTPException(status_code=404, detail="Account not found")
+        raise HTTPException(status_code=404, detail="Account not found, please check the account name or make sure you are registered in the banking system")
     return {"balance": account_data.balance}
 
 @app.get("/transactions-history")
@@ -114,4 +116,7 @@ def get_transactions_history(emitter: str = Header(...)):
             Transaction.receiver == emitter
         )
     ).all()
-    return {"transactions": transactions}
+    return {"transactions": transactions,
+            "count": len(transactions),
+            "message": f"Here is the transactions history for {emitter} account, you can check the emitter and receiver names in the transactions"
+            }
