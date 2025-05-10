@@ -11,34 +11,36 @@ router = APIRouter()
 async def websocket_endpoint(websocket: WebSocket):
     user = websocket.query_params.get("user", "Anonymous")
     print("WebSocket connection established")
-    
+
     # 🟩 Initialize workflow ONCE globally
     workflow = create_workflow(user=user)
     await websocket.accept()
     try:
         while True:
             user_input = await websocket.receive_text()
-            print(f"👤 USER: {user_input}")
-
-            local_time = time.localtime()
-            date = time.strftime("%Y-%m-%d", local_time)
-            time_now = time.strftime("%H:%M", local_time)
-
+            user_icon = "👤"
+            agent_icon = "🏦"
+            
+             
             base_context = f"""
-                You are assisting user: {user}. Current date: {date}, time: {time_now}.
-                You understand English, French, Arabic, and Tunisian dialects.
-                Always respond using the same language or dialect the user used.
-                """
-
+            You are assisting user: {user}. Current date: {date}, time: {time_now}.
+            You understand English, French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
+            Always respond in the language or dialect used by the user.
+            """
+        
+            result = None
+            user_input = input(f"{user_icon} USER ({user}): ")
+        
             result = await workflow.run(
                 inputs=[
                     AgentWorkflowInput(
                         prompt=base_context + f"""
-                    Analyze this user message: '{user_input}'.
-                    Detect the user’s intent (e.g., check balance, see transactions, send money, ask FAQ).
-                    Identify the language or dialect used, and route to the proper agent.
-                    Ensure the final response is in the same language or dialect.
-                    """
+        Identify the user intent for this message: [USER MESSAGE START] {user_input}[USER MESSAGE END].
+        
+        - If it's transactional (e.g., balance check, transfer, transaction history), route to BankAgent.
+        - If it's informational or policy-related (e.g., about banking products, obligations, or procedures), route to BankInfoAgent.
+        - Always respond in the user's language or dialect.
+                        """
                     ),
                 ]
             )

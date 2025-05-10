@@ -14,6 +14,11 @@ services:
     volumes:
       - ollama_models:/root/.ollama
 
+  front:
+    image: elbankeji_front
+    ports:
+      - "3000:3000"
+
 
     
       #- OLLAMA_NVIDIA_GPU=true  # Enable NVIDIA GPU support
