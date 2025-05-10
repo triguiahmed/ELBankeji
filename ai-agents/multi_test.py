@@ -1,4 +1,3 @@
-import asyncio
 import json
 import time
 import traceback
@@ -219,7 +218,7 @@ def create_workflow(user: str) -> AgentWorkflow:
         - Make a money transfer
         - Request a loan
  
-        Do NOT respond to:
+        Do NOT interfere to:
         - Questions about banking products, policies, procedures
         - Legal information
         - FAQ-related topics
@@ -236,15 +235,7 @@ def create_workflow(user: str) -> AgentWorkflow:
     )
  
     return workflow
- 
- 
-# ---- ENTRY POINT ----
-if __name__ == "__main__":
-    try:
-        asyncio.run(main())
-    except Exception:
-        traceback.print_exc()
- 
+
 #python bank_agent.py
  
 #               how much money do i have in my account ?

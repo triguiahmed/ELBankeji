@@ -18,9 +18,11 @@ async def websocket_endpoint(websocket: WebSocket):
     try:
         while True:
             user_input = await websocket.receive_text()
-            user_icon = "👤"
-            agent_icon = "🏦"
-            
+
+            local_time = time.localtime()
+            date = time.strftime("%Y-%m-%d", local_time)
+            time_now = time.strftime("%H:%M", local_time)
+  
              
             base_context = f"""
             You are assisting user: {user}. Current date: {date}, time: {time_now}.
@@ -28,20 +30,20 @@ async def websocket_endpoint(websocket: WebSocket):
             Always respond in the language or dialect used by the user.
             """
         
-            result = None
-            user_input = input(f"{user_icon} USER ({user}): ")
         
             result = await workflow.run(
                 inputs=[
                     AgentWorkflowInput(
-                        prompt=base_context + f"""
-        Identify the user intent for this message: [USER MESSAGE START] {user_input}[USER MESSAGE END].
+                    prompt=base_context + f"""
+                    Understand this user message: '{user_input}'.
+                    - Identify the user’s **intent** (transactional or informational).
+                    - If transactional (e.g., balance, transfer, history), route to BankAgent.
+                    - If informational (e.g., policies, bank products, obligations), route to FAQScraper.
         
-        - If it's transactional (e.g., balance check, transfer, transaction history), route to BankAgent.
-        - If it's informational or policy-related (e.g., about banking products, obligations, or procedures), route to BankInfoAgent.
-        - Always respond in the user's language or dialect.
-                        """
+                    Always respond in the same language or dialect as the user.
+                    """
                     ),
+ 
                 ]
             )
 
