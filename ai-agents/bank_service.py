@@ -178,7 +178,7 @@ class BankAPIClient:
             response_data = response.json()
             
             num_transactions = len(response_data.get("transactions", []))
-            self.logger.info(f"Retrieved {num_transactions} transactions")
+            self.logger.info(f"Retrieved {response_data} transactions")
             self.logger.debug(f"Response data: {response_data}")
             
             return response_data

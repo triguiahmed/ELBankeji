@@ -3,34 +3,28 @@ from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from beeai_framework.workflows.agent import AgentWorkflowInput
 from multi_test import create_workflow
 import time
+
 router = APIRouter()
-
-
 
 @router.websocket("/chat")
 async def websocket_endpoint(websocket: WebSocket):
     user = websocket.query_params.get("user", "Anonymous")
     print("WebSocket connection established")
-
+    date = time.strftime("%Y-%m-%d")
+    time_now = time.strftime("%H:%M:%S")
     # 🟩 Initialize workflow ONCE globally
     workflow = create_workflow(user=user)
     await websocket.accept()
     try:
         while True:
-            user_input = await websocket.receive_text()
-            user_icon = "👤"
-            agent_icon = "🏦"
-            
+            user_input = await websocket.receive_text()            
              
             base_context = f"""
             You are assisting user: {user}. Current date: {date}, time: {time_now}.
             You understand English, French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
             Always respond in the language or dialect used by the user.
             """
-        
-            result = None
-            user_input = input(f"{user_icon} USER ({user}): ")
-        
+            
             result = await workflow.run(
                 inputs=[
                     AgentWorkflowInput(
