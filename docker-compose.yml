@@ -2,6 +2,21 @@ volumes:
   ollama_models: 
 
 services:
+
+
+  frontend:
+    build: ./frontend  
+    container_name: node-frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules  
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - ai-agents
+    network_mode: host
   ollama:
     build: ./ollama
     container_name: ollama
