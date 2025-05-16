@@ -1,19 +1,19 @@
 "use client"
 
 import type * as React from "react"
+import Image from 'next/image';
+import elb from './elb.png';
+
+
 import {
-  ArrowUpCircleIcon,
   BarChartIcon,
   CameraIcon,
   ClipboardListIcon,
-  DatabaseIcon,
   FileCodeIcon,
   FileIcon,
   FileTextIcon,
-  FolderIcon,
   HelpCircleIcon,
   LayoutDashboardIcon,
-  ListIcon,
   SearchIcon,
   SettingsIcon,
   UsersIcon,
@@ -46,22 +46,13 @@ const data = {
       icon: LayoutDashboardIcon,
     },
     {
-      title: "Lifecycle",
-      url: "#",
-      icon: ListIcon,
-    },
-    {
       title: "Analytics",
       url: "#",
       icon: BarChartIcon,
     },
+
     {
-      title: "Projects",
-      url: "#",
-      icon: FolderIcon,
-    },
-    {
-      title: "Team",
+      title: "My Beneficiaries",
       url: "#",
       icon: UsersIcon,
     },
@@ -132,11 +123,7 @@ const data = {
     },
   ],
   documents: [
-    {
-      name: "Data Library",
-      url: "#",
-      icon: DatabaseIcon,
-    },
+
     {
       name: "Reports",
       url: "#",
@@ -156,12 +143,18 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
       <SidebarHeader>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
-              <a href="#">
-                <ArrowUpCircleIcon className="h-5 w-5" />
-                <span className="text-base font-semibold">ElBankeji</span>
-              </a>
-            </SidebarMenuButton>
+        <SidebarMenuButton asChild className="data-[slot=sidebar-menu-button]:!p-1.5">
+          <a href="#">
+          <Image 
+            src={elb}
+            alt="Logo" 
+            width={60} 
+            height={50} 
+            className="h-10 w-10"
+          />
+            <span className="text-base font-semibold">ElBankeji</span>
+          </a>
+        </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
