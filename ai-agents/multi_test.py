@@ -176,7 +176,12 @@ class RequestLoanTool(Tool[RequestLoanToolInput, ToolRunOptions, StringToolOutpu
  
 # ---- MAIN WORKFLOW ----
 def create_workflow(user: str) -> AgentWorkflow:
+    import os
+    os.environ["OLLAMA_API_BASE"] =  "http://host.docker.internal:11434"
     chat_model = ChatModel.from_name("ollama:granite3.2:2b-instruct-q4_K_M")
+
+    logger.info("Settings")
+    logger.info(chat_model._settings)
     workflow = AgentWorkflow(name="Multi-agent Smart Banking Assistant")
  
     local_time = time.localtime()
@@ -258,3 +263,4 @@ def create_workflow(user: str) -> AgentWorkflow:
  
 #Scraping
 #LA BIAT EMET-ELLE DES OBLIGATIONS ?
+ 

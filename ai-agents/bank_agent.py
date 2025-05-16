@@ -115,7 +115,7 @@ class BankTool(Tool[BankToolInput, ToolRunOptions, StringToolOutput]):
             raise ToolInputValidationError(f"Failed to perform banking operation: {e}")
 
 async def main() -> None:
-    chat_model = ChatModel.from_name("ollama:granite3.2:2b-instruct-q4_K_M")
+    chat_model = ChatModel.from_name("ollama:granite3.3")
     bank_tool = BankTool()
     scraper_tool = ScraperTool()
     agent = ReActAgent(llm=chat_model, tools=[bank_tool, scraper_tool], memory=UnconstrainedMemory(), stream=True)

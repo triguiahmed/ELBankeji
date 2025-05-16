@@ -7,7 +7,7 @@ from typing import List, Optional, Dict, Any
 class BankAPIClient:
     """A client service for interacting with the Bank API with comprehensive logging."""
     
-    def __init__(self, base_url: str = "http://localhost:8000", log_level=logging.INFO):
+    def __init__(self, base_url: str = "http://host.docker.internal:8000", log_level=logging.INFO):
         """
         Initialize the Bank API client.
         
@@ -33,7 +33,7 @@ class BankAPIClient:
             # Add handler to logger
             self.logger.addHandler(console_handler)
         
-        self.logger.info(f"Bank API Client initialized with base URL: {self.base_url}")
+        self.logger.info(f"Bank API Client initialized with base URL: http://host.docker.internal:8000")
     
     def request_loan(self, user: str, amount: float, date: Optional[datetime] = None) -> Dict[str, Any]:
         """
@@ -60,7 +60,7 @@ class BankAPIClient:
         self.logger.debug(f"Request payload: {payload}")
         
         try:
-            response = requests.post(f"{self.base_url}/request-loan", json=payload)
+            response = requests.post(f"http://host.docker.internal:8000/request-loan", json=payload)
             
             response_data = response.json()
             response.raise_for_status()
@@ -107,7 +107,7 @@ class BankAPIClient:
         self.logger.debug(f"Request payload: {payload}")
         
         try:
-            response = requests.post(f"{self.base_url}/send-money", json=payload)
+            response = requests.post(f"http://host.docker.internal:8000/send-money", json=payload)
             response_data = response.json()
             response.raise_for_status()
             
@@ -143,7 +143,7 @@ class BankAPIClient:
         self.logger.debug(f"Request headers: {headers}")
         
         try:
-            response = requests.get(f"{self.base_url}/balance", headers=headers)
+            response = requests.get(f"http://host.docker.internal:8000/balance", headers=headers)
             response_data = response.json()
             response.raise_for_status()
             
@@ -182,7 +182,7 @@ class BankAPIClient:
         self.logger.debug(f"Request headers: {headers}")
         
         try:
-            response = requests.get(f"{self.base_url}/transactions-history", headers=headers)
+            response = requests.get(f"http://host.docker.internal:8000/transactions-history", headers=headers)
             response_data = response.json()
             response.raise_for_status()
             
@@ -214,7 +214,7 @@ if __name__ == "__main__":
     )
     
     # Create client with DEBUG logging level
-    client = BankAPIClient("http://localhost:8000", log_level=logging.DEBUG)
+    client = BankAPIClient("http://host.docker.internal:8000", log_level=logging.DEBUG)
     
     try:
         # Example: Request a loan
