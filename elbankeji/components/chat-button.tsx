@@ -271,10 +271,10 @@ export function ChatButton() {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                    <AvatarFallback>AI</AvatarFallback>
+                    <AvatarFallback>EB</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <div className="font-medium">Support Chat</div>
+                    <div className="font-medium">ElBankeji Support Chat</div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       {connectionStatus === ConnectionStatus.CONNECTED ? (
                         <span className="flex items-center">
@@ -399,7 +399,7 @@ export function ChatButton() {
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="left">{isOpen ? "Close chat" : "Open support chat"}</TooltipContent>
+          <TooltipContent side="left">{isOpen ? "Close chat" : "Open ElBankeji support chat"}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
     </div>

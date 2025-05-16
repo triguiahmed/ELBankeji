@@ -28,18 +28,6 @@ services:
     volumes:
       - ollama_models:/root/.ollama
 
-
-
-    
-      #- OLLAMA_NVIDIA_GPU=true  # Enable NVIDIA GPU support
-    #devices:
-      #- "/dev/nvidia0:/dev/nvidia0"  # Map the NVIDIA GPU device
-      #- "/dev/nvidiactl:/dev/nvidiactl"  # Map the NVIDIA control device
-      #- "/dev/nvidia-uvm:/dev/nvidia-uvm"  # Map the NVIDIA user mode device
-    #volumes:
-      #- "/usr/local/nvidia/lib64:/usr/local/nvidia/lib64"  # Map the NVIDIA library
-      #- "/usr/local/nvidia/bin:/usr/local/nvidia/bin"  # Map the NVIDIA binaries
-
   db:
     image: postgres:17.2
     container_name: postgres_db
@@ -82,17 +70,3 @@ services:
     volumes:
       - ./ai-agents:/app
     network_mode: host
-
-  # angular-chatbot:
-  #   build: ./angular-chatbot
-  #   container_name: angular-chatbot
-  #   ports:
-  #     - "4200:4200"
-  #   volumes:
-  #     - .:/app
-  #     - /app/node_modules # Avoid overwriting node_modules
-  #   stdin_open: true
-  #   tty: true
-  #   depends_on:
-  #     - ai-agents
-  #   network_mode: host  

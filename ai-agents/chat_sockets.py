@@ -52,6 +52,7 @@ async def websocket_endpoint(websocket: WebSocket):
             )
 
             # Send final answer back
+            logger.info("Response {}".format(result.result.final_answer))
             await websocket.send_text(result.result.final_answer)
 
     except WebSocketDisconnect:
