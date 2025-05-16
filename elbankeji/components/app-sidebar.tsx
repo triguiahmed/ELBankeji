@@ -150,7 +150,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
             alt="Logo" 
             width={60} 
             height={50} 
-            className="h-10 w-10"
+            className="h-9 w-9"
           />
             <span className="text-base font-semibold">ElBankeji</span>
           </a>
