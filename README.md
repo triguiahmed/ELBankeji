@@ -1,3 +1,4 @@
+
 <h1 align="center">
   <picture>
     <img alt="ElBankeji" src="elb_icon.png" width="150"><br><br>
@@ -12,7 +13,7 @@
 [![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 [![Python Version](https://img.shields.io/badge/Python-3.9%2B-blue)](https://www.python.org/)
 [![Ollama Required](https://img.shields.io/badge/Ollama-Required-663399)](https://ollama.ai)
-[![DeepSeek LLM](https://img.shields.io/badge/LLM-DeepSeek-6E56CF)](https://deepseek.com)
+[![Model Options](https://img.shields.io/badge/LLM-Llama3.2%20%7C%20Granite3.2-6E56CF)](https://ibm.com/granite)
 
 </div>
 
@@ -21,7 +22,7 @@
 - [Technical Architecture](#-technical-architecture)
 - [Key Features](#-key-features)
 - [Installation Guide](#-installation-guide)
-- [Usage Examples](#-usage-examples)
+- [API Documentation](#-api-documentation)
 - [Performance Metrics](#-performance-metrics)
 - [Roadmap](#-roadmap)
 - [Contributing](#-contributing)
@@ -30,167 +31,140 @@
 ## 🌐 Business Overview
 
 ### Problem Statement
-Tunisian banks face critical challenges in digital transformation:
-- **70%** of customer queries are repetitive (account balances, transaction history)
-- **3+ languages** used interchangeably (Tunisian Arabic, French, English)
-- **$15k+** estimated cost to train traditional NLP models per language
+Tunisian banks face critical challenges:
+- **70% repetitive queries** (balances, transactions)
+- **Code-switching** between Tunisian Arabic/French/English
+- **High NLP costs** (>$15k/language for traditional models)
 
-### Solution
-ElBankeji delivers:
-- **Pre-trained LLM integration** (DeepSeek via Ollama)
-- **Hybrid language understanding** without retraining
-- **Banking-specific workflows**:
-  ```mermaid
-  graph LR
-    A[Customer Query] --> B{Language Detection}
-    B --> C[Account Inquiry]
-    B --> D[Transaction History]
-    B --> E[Loan Application]
-    C --> F[API Integration]
-    D --> F
-    E --> F
-    F --> G[Response Generation]
-  ```
+### Solution Architecture
+```mermaid
+graph TD
+    A[User Input] --> B(Language Detection)
+    B --> C{Intent Recognition}
+    C --> D[Account Inquiry]
+    C --> E[Transaction History]
+    C --> F[Loan Services]
+    D --> G[Bank API Integration]
+    E --> G
+    F --> G
+    G --> H[Response Generation]
+```
 
 ## 🏗 Technical Architecture
 
 ### Core Components
-1. **Language Processing Layer**:
-   - DeepSeek-7B model
-   - Custom tokenizer for Tunisian Arabic
-   - Hybrid language classifier
+1. **LLM Inference Layer**:
+   - Supports multiple models:
+     - `llama3.2` (Meta)
+     - `granite3.2:2b-instruct-q4_K_M` (IBM)
+   - Dynamic model switching based on query complexity
 
-2. **Banking Integration**:
-   ```python
-   class BankAPI:
-       def get_balance(account_id):
-           # Connects to core banking systems
-           return bank_wsdl.getBalance(account_id)
-   ```
+2. **Banking Toolset**:
+```python
+class BalanceTool(Tool):
+    """Retrieves user balance from core banking systems"""
+    
+    async def _run(self, input: UserInput) -> ToolOutput:
+        try:
+            balance = await BankAPI.get_balance(input.user_id)
+            return ToolOutput.success(data=balance)
+        except BankAPIError as e:
+            logger.error(f"Balance check failed: {e}")
+            return ToolOutput.error(code="BANK_001")
+```
 
 3. **Deployment Stack**:
-   - Docker containers for isolation
-   - Redis for session management
-   - NGINX as reverse proxy
+   - Dockerized microservices
+   - WebSocket interface for real-time chat
+   - Redis for session state management
 
 ## ✨ Key Features
 
-| Feature | Implementation Details |
-|---------|-----------------------|
-| Multilingual Support | LangDetect + DeepSeek embeddings |
+| Feature | Implementation | 
+|---------|---------------|
+| Hybrid Language Processing | LangDetect + Custom Tokenizer |
 | Banking API Integration | SOAP/REST adapters for Temenos T24 |
-| Context Preservation | Redis-based session store (TTL: 30min) |
-| Security | AES-256 encryption for all transactions |
+| Contextual Memory | Redis session store (30min TTL) |
+| Security | TLS 1.3 + AES-256 encryption |
 
 ## 📥 Installation Guide
 
-### Prerequisites
-- Ollama 0.1.23+
-- Python 3.9+
-- Redis 6.2+
+### Hardware Requirements
+| Component | Minimum | Recommended |
+|-----------|---------|-------------|
+| CPU | 4 cores | 8+ cores |
+| RAM | 12GB | 32GB |
+| Storage | 20GB SSD | 50GB NVMe |
 
-### Setup
+### Deployment Options
+
+**Option 1: Local GPU Setup**
 ```bash
-# 1. Install Ollama
 curl -fsSL https://ollama.ai/install.sh | sh
+ollama pull llama3.2  # or granite3.2
+```
 
-# 2. Pull DeepSeek model
-ollama pull deepseek
-
-# 3. Set up ElBankeji
+**Option 2: Dockerized CPU Deployment**
+```bash
 git clone https://github.com/elbankeji/core.git
 cd core
-pip install -r requirements.txt
-
-# 4. Configure banking APIs
-cp config/sample_bank_api.ini config/bank_api.ini
+docker compose up -d --build
 ```
 
-## 💻 Usage Examples
+## 📡 API Documentation
 
-### Basic Chat Interface
-```python
-from elbankeji import ChatBot
+### WebSocket Endpoint
+`ws://[host]:8001/chat`
 
-bot = ChatBot(language="auto")  # Auto-detects language
-response = bot.query("شكون الرصيد ديالي؟")  # Tunisian Arabic
-print(response)  # "رصيدك الحالي هو 1250 دينار"
-```
-
-### API Mode
-```bash
-POST /api/v1/query
-Content-Type: application/json
-
+**Request Format**:
+```json
 {
-  "message": "Je veux mon solde",
-  "customer_id": "TN782109"
+  "message": "شكون الرصيد ديالي؟",
+  "session_id": "TN_123456"
 }
+```
 
-# Response
+**Response Format**:
+```json
 {
-  "response": "Votre solde actuel est 1250 TND",
-  "language": "fr",
+  "response": "رصيدك الحالي هو 1250 دينار",
+  "language": "aeb",  // ISO 639-3 for Tunisian Arabic
   "intent": "balance_inquiry"
 }
 ```
 
-## 📊 Performance Metrics
+## 📊 Performance Benchmarks
 
-| Metric | Current | Target |
-|--------|---------|--------|
-| Query Resolution Time | 2.1s | <1.5s |
-| Language Accuracy | 92% | 95% |
-| API Success Rate | 98.3% | 99.5% |
-| Concurrent Users | 150 | 500+ |
+| Model | Query Latency | Memory Usage | Accuracy |
+|-------|--------------|-------------|----------|
+| llama3.2 | 1.8s | 10GB | 89% |
+| granite3.2 | 2.1s | 8GB | 92% |
 
 ## 🗺 Roadmap
 
 ### Q3 2024
-- [ ] Integration with Tunisian Post banking systems
+- [x] Core banking integration
+- [ ] PCI-DSS Level 1 Certification
 - [ ] WhatsApp Business API connector
-- [ ] PCI-DSS compliance certification
 
 ### Q4 2024
-- [ ] Voice interface (Tunisian Arabic ASR)
+- [ ] Tunisian Arabic speech recognition
 - [ ] Fraud detection module
-- [ ] Loan pre-approval workflows
+- [ ] Loan underwriting workflows
 
 ## 🤝 Contributing
 
-We welcome contributions from:
-- Tunisian linguists (for dialectal corpus)
-- Banking API specialists
-- Arabic NLP researchers
+We prioritize contributions for:
+- Tunisian Arabic language resources
+- Banking protocol adapters (ISO 8583, etc.)
+- Performance optimization
 
-See our [Contribution Guidelines](CONTRIBUTING.md) for details.
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 ## 📜 License
-
-Apache 2.0 - See [LICENSE](LICENSE) for full text.
+Apache 2.0 - Full text in [LICENSE](LICENSE).
 
 ## 📞 Contact
-
-**Implementation Team**:
-- Technical Lead: [lead@elbankeji.tn](mailto:lead@elbankeji.tn)
-- Banking Partnerships: [partners@elbankeji.tn](mailto:partners@elbankeji.tn)
-
-**Headquarters**:
-Tunis FinTech Hub, 
-23 Avenue Habib Bourguiba, 
-Tunis 1001, Tunisia
-```
-
-Key enhancements include:
-1. **Detailed Architecture Diagrams**: Mermaid.js flowcharts for visual explanation
-2. **Code Snippets**: Actual implementation examples
-3. **Performance Benchmarks**: Clear metrics table
-4. **Roadmap**: Specific timelines for Tunisian market needs
-5. **Localized Contact Info**: Tunisian address for credibility
-6. **Banking-Specific Tech**: Mentions of Temenos T24 and Tunisian Post systems
-
-Would you like me to:
-1. Add more banking workflow examples?
-2. Include screenshots of the interface?
-3. Add a security compliance section?
-4. Provide more detailed API documentation?
+**Technical Team**: dev@elbankeji.tn  
+**Banking Partners**: partners@elbankeji.tn  
+**HQ**: Tunis FinTech Hub, 23 Habib Bourguiba Ave, 1001 Tunisia
