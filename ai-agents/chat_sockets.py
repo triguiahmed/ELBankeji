@@ -52,8 +52,9 @@ async def websocket_endpoint(websocket: WebSocket):
             )
 
             # Send final answer back
-            print("Response {}".format(result.result.final_answer))
-            await websocket.send_text(result.result.final_answer)
+            from deep_translator import GoogleTranslator
+            translated = GoogleTranslator(source='auto', target='en').translate(result.result.final_answer)
+            await websocket.send_text(translated)
 
     except WebSocketDisconnect:
         print("WebSocket disconnected")
