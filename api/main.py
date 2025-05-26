@@ -93,9 +93,7 @@ def send_money(transaction: SendMoneyRequest):
     emitter_account = db.query(Account).filter(Account.owner == transaction.emitter).first()
     
     return {
-        "message": "Transaction successful, the ammount of {transaction.amount} has been sent to {transaction.receiver}, the transaction id is {db_transaction.id}, and the date is {transaction.date}, Your new balance is {emitter_account.balance}",
-        "transaction_id": db_transaction.id,
-        "amount_tnd": transaction.amount  
+        "message": f"Transaction successful, the ammount of {transaction.amount} has been sent to {transaction.receiver} on  {transaction.date}, Your new balance is {emitter_account.balance}",
     }
 
 @app.get("/balance")

@@ -233,7 +233,7 @@ def create_workflow(user: str) -> AgentWorkflow:
     workflow.add_agent(
         name="DataSynthesizer",
         role="A meticulous and creative data synthesizer",
-        instructions="""You can combine disparate information into a final coherent summary."
+        instructions="""You can combine disparate information into a final coherent summary that relates to the initial input."
         Respond with a clear answer in the user's language. If no relevant info is found, politely say so.""",
         llm=chat_model,
     )

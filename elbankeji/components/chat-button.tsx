@@ -1,3 +1,4 @@
+
 "use client"
 
 import * as React from "react"
@@ -34,58 +35,106 @@ export function ChatButton() {
 
   // Initialize socket connection
   React.useEffect(() => {
-    try {
-      socketRef.current = getSocketService(SOCKET_URL)
+    if (!socketRef.current) {
+      try {
+        socketRef.current = getSocketService(SOCKET_URL)
+        console.log("Socket service initialized")
+      } catch (error) {
+        console.error("Failed to initialize socket service:", error)
+        return
+      }
+    }
 
-      // Subscribe to status changes
-      const unsubscribeStatus = socketRef.current.onStatusChange((status) => {
-        setConnectionStatus(status)
-      })
+    // Subscribe to status changes
+    const unsubscribeStatus = socketRef.current.onStatusChange((status) => {
+      console.log("Connection status changed:", status)
+      setConnectionStatus(status)
+    })
 
-      // Subscribe to incoming messages
-      const unsubscribeMessage = socketRef.current.onMessage((data) => {
-        if (data.type === "thinking") {
-          setIsThinking(data.isThinking)
-          if (!data.isThinking) {
-            setIsTyping(true) // Start typing when thinking ends
-          }
-        } else if (data.type === "typing") {
-          setIsTyping(data.isTyping)
-        } else if (data.type === "message") {
-          setIsThinking(false)
-          setIsTyping(false)
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: data.id || Date.now().toString(),
-              content: data,
-              sender: "assistant",
-              timestamp: new Date(),
-            },
-          ])
+    // Subscribe to incoming messages
+    const unsubscribeMessage = socketRef.current.onMessage((data) => {
+      console.log("Raw message received:", data)
+      
+      // Parse the data if it's a string (JSON)
+      let parsedData
+      try {
+        parsedData =  data
+        console.log("Parsed message:", parsedData)
+      } catch (error) {
+        console.error("Error parsing message:", error)
+        parsedData = { content: typeof data === 'string' ? data : "Received message" }
+      }
+      
+      if (parsedData.type === "thinking") {
+        setIsThinking(parsedData.isThinking)
+        if (!parsedData.isThinking) {
+          setIsTyping(true) // Start typing when thinking ends
         }
-      })
-
-      // Connect to the socket server when the chat is opened
-      if (isOpen) {
-        socketRef.current.connect()
+      } else if (parsedData.type === "typing") {
+        setIsTyping(parsedData.isTyping)
+      } else if (parsedData.type === "message") {
+        setIsThinking(false)
+        setIsTyping(false)
+        
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: parsedData.id || Date.now().toString(),
+            content: parsedData.content || "Empty message", // Extract the actual content
+            sender: "assistant",
+            timestamp: new Date(),
+          },
+        ])
+      } else {
+        // Fallback for messages without a type (direct messages)
+        // This handles legacy or simple message formats
+        const messageContent = parsedData.content || parsedData.message || 
+                             (typeof parsedData === 'string' ? parsedData : JSON.stringify(parsedData))
+        
+        setIsThinking(false)
+        setIsTyping(false)
+        
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: parsedData.id || Date.now().toString(),
+            content: messageContent,
+            sender: "assistant",
+            timestamp: new Date(),
+          },
+        ])
       }
+    })
 
-      return () => {
-        unsubscribeStatus()
-        unsubscribeMessage()
-      }
-    } catch (error) {
-      console.error("Failed to initialize socket service:", error)
+    // Connect to the socket server when the chat is opened
+    if (isOpen) {
+      console.log("Chat opened, connecting to socket server")
+      socketRef.current.connect()
+    } else {
+      console.log("Chat closed, not connecting")
+    }
+
+    return () => {
+      console.log("Cleaning up socket subscriptions")
+      unsubscribeStatus()
+      unsubscribeMessage()
     }
   }, [isOpen])
 
   const toggleChat = () => {
-    setIsOpen(!isOpen)
+    const newIsOpen = !isOpen
+    setIsOpen(newIsOpen)
 
     // Connect or disconnect based on chat state
-    if (!isOpen && socketRef.current) {
-      socketRef.current.connect()
+    if (newIsOpen) {
+      if (socketRef.current) {
+        console.log("Opening chat, connecting to socket...")
+        socketRef.current.connect()
+      }
+    } else {
+      console.log("Closing chat")
+      // Optionally disconnect when closing chat
+      // socketRef.current?.disconnect()
     }
   }
 
@@ -110,23 +159,39 @@ export function ChatButton() {
     setIsThinking(true)
 
     // Send to server if connected
-    if (socketRef.current && connectionStatus === ConnectionStatus.CONNECTED) {
-      socketRef.current.sendMessage(userMessage)
-    } else if (connectionStatus !== ConnectionStatus.CONNECTED) {
-      // Fallback for when not connected
-      setTimeout(() => {
-        setIsThinking(false)
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: (Date.now() + 1).toString(),
-            content: "I'm currently offline. Please try again later.",
-            sender: "assistant",
-            timestamp: new Date(),
-          },
-        ])
-      }, 1000)
+    if (socketRef.current) {
+      if (connectionStatus === ConnectionStatus.CONNECTED) {
+        console.log("Sending message to server:", userMessage)
+        try {
+          socketRef.current.sendMessage(userMessage)
+        } catch (error) {
+          console.error("Error sending message:", error)
+          handleDisconnectedMessage()
+        }
+      } else {
+        console.warn("Not connected, status:", connectionStatus)
+        handleDisconnectedMessage()
+      }
+    } else {
+      console.error("Socket reference is null")
+      handleDisconnectedMessage()
     }
+  }
+
+  // Handle the case when disconnected
+  const handleDisconnectedMessage = () => {
+    setTimeout(() => {
+      setIsThinking(false)
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: (Date.now() + 1).toString(),
+          content: "I'm currently offline. Please try again later.",
+          sender: "assistant",
+          timestamp: new Date(),
+        },
+      ])
+    }, 1000)
   }
 
   // Scroll to bottom when messages change
@@ -138,6 +203,57 @@ export function ChatButton() {
       }
     }
   }, [messages, isTyping, isThinking])
+
+  // Add ping function to check connection
+  const pingServer = React.useCallback(() => {
+    if (socketRef.current && connectionStatus === ConnectionStatus.CONNECTED) {
+      try {
+        // Send a simple ping message
+        socketRef.current.sendMessage({
+          id: `ping-${Date.now()}`,
+          content: "_ping",
+          sender: "",
+          timestamp: new Date(),
+        })
+        console.log("Ping sent to server")
+      } catch (error) {
+        console.error("Error sending ping:", error)
+      }
+    }
+  }, [connectionStatus])
+
+  // Set up periodic ping to keep connection alive
+  React.useEffect(() => {
+    if (!isOpen) return
+
+    const pingInterval = setInterval(() => {
+      pingServer()
+    }, 30000) // Ping every 30 seconds
+
+    return () => {
+      clearInterval(pingInterval)
+    }
+  }, [isOpen, pingServer])
+
+  // Handle connection status changes
+  React.useEffect(() => {
+    console.log("Connection status is now:", connectionStatus)
+    
+    if (connectionStatus === ConnectionStatus.ERROR || 
+        connectionStatus === ConnectionStatus.DISCONNECTED) {
+      // Try to reconnect when disconnected
+      if (socketRef.current && isOpen) {
+        console.log("Attempting to reconnect...")
+        setTimeout(() => {
+          try {
+            socketRef.current?.connect()
+          } catch (error) {
+            console.error("Reconnection attempt failed:", error)
+          }
+        }, 2000)
+      }
+    }
+  }, [connectionStatus, isOpen])
 
   return (
     <div className="fixed bottom-4 right-4 z-50">
@@ -155,10 +271,10 @@ export function ChatButton() {
                 <div className="flex items-center gap-2">
                   <Avatar className="h-8 w-8">
                     <AvatarImage src="/placeholder.svg?height=32&width=32" />
-                    <AvatarFallback>AI</AvatarFallback>
+                    <AvatarFallback>EB</AvatarFallback>
                   </Avatar>
                   <div className="flex flex-col">
-                    <div className="font-medium">Support Chat</div>
+                    <div className="font-medium">ElBankeji Support Chat</div>
                     <div className="text-xs text-muted-foreground flex items-center gap-1">
                       {connectionStatus === ConnectionStatus.CONNECTED ? (
                         <span className="flex items-center">
@@ -283,7 +399,7 @@ export function ChatButton() {
               )}
             </Button>
           </TooltipTrigger>
-          <TooltipContent side="left">{isOpen ? "Close chat" : "Open support chat"}</TooltipContent>
+          <TooltipContent side="left">{isOpen ? "Close chat" : "Open ElBankeji support chat"}</TooltipContent>
         </Tooltip>
       </TooltipProvider>
     </div>

@@ -2,9 +2,11 @@
 from fastapi import APIRouter, WebSocket, WebSocketDisconnect
 from beeai_framework.workflows.agent import AgentWorkflowInput
 from multi_test import create_workflow
+from beeai_framework.logger import Logger
+import json
 import time
 router = APIRouter()
-
+logger = Logger(__name__)
 
 
 @router.websocket("/chat")
@@ -17,8 +19,12 @@ async def websocket_endpoint(websocket: WebSocket):
     await websocket.accept()
     try:
         while True:
-            user_input = await websocket.receive_text()
-
+            inputt = await websocket.receive_text()
+            logger.info("user_input {}".format(inputt))
+            user_input= json.loads(inputt).get("content") 
+            if user_input == "_ping":
+                continue
+            logger.info("user_input {}".format(user_input))
             local_time = time.localtime()
             date = time.strftime("%Y-%m-%d", local_time)
             time_now = time.strftime("%H:%M", local_time)      
@@ -52,10 +58,11 @@ async def websocket_endpoint(websocket: WebSocket):
             )
 
             # Send final answer back
+            logger.info("Response {}".format(result.result.final_answer))
             await websocket.send_text(result.result.final_answer)
 
     except WebSocketDisconnect:
-        print("WebSocket disconnected")
+        logger.info("WebSocket disconnected")
     except Exception as e:
         import traceback
         traceback.print_exc()

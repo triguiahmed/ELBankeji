@@ -2,6 +2,7 @@ volumes:
   ollama_models: 
 
 services:
+
   #ollama:
    # build: ./ollama
     #container_name: ollama
@@ -13,17 +14,19 @@ services:
     #volumes:
      # - ollama_models:/root/.ollama
 
-
-
-    
-      #- OLLAMA_NVIDIA_GPU=true  # Enable NVIDIA GPU support
-    #devices:
-      #- "/dev/nvidia0:/dev/nvidia0"  # Map the NVIDIA GPU device
-      #- "/dev/nvidiactl:/dev/nvidiactl"  # Map the NVIDIA control device
-      #- "/dev/nvidia-uvm:/dev/nvidia-uvm"  # Map the NVIDIA user mode device
-    #volumes:
-      #- "/usr/local/nvidia/lib64:/usr/local/nvidia/lib64"  # Map the NVIDIA library
-      #- "/usr/local/nvidia/bin:/usr/local/nvidia/bin"  # Map the NVIDIA binaries
+  frontend:
+    build: ./elbankeji  
+    container_name: frontend
+    ports:
+      - "3000:3000"
+    volumes:
+      - /app/node_modules 
+      
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - ai-agents
+    #network_mode: host
 
   db:
     image: postgres:17.2
@@ -67,3 +70,4 @@ services:
     volumes:
       - ./ai-agents:/app
     #network_mode: host
+
