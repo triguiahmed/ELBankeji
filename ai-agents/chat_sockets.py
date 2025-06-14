@@ -34,25 +34,25 @@ async def websocket_endpoint(websocket: WebSocket):
                     AgentWorkflowInput(
                     prompt=f"""
                     You are assisting the user: {user}. Current date: {date}, time: {time_now}.
-                    You understand English, French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
+                    You understand English , French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
                     Identify the user intent for this message: [USER MESSAGE START]{user_input}[USER MESSAGE END].
                     - If it's transactional (e.g., balance check, transfer, transaction history) respond.
                     
-                    - Always respond in the user's language or dialect.
+                    - Always respond with the same language of {user_input}.
                     """
                     ),
                     AgentWorkflowInput(
                             prompt=f"""
-                            You understand English, French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
+                            You understand English , French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
                             Identify the user intent for this message: [USER MESSAGE START]{user_input}[USER MESSAGE END].
                             - If it's informational or policy-related (e.g., about banking products, obligations, or procedures), route to BankInfoAgent.
                         
-                            - Always respond in the user's language or dialect.
+                            - Always respond with the same language of {user_input}.
                             """
                             ),
                      AgentWorkflowInput(
                             prompt=f"Summarize the response for {user_input}.",
-                            expected_output=f"A paragraph that respond to {user_input} in the user's language or dialect.",
+                            expected_output=f"A paragraph that respond to {user_input} with the same language of {user_input}.",
                         ),
                 ]
             )

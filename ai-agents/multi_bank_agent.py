@@ -187,7 +187,7 @@ async def main():
 
     base_context = f"""
     You are assisting user: {user}. Current date: {date}, time: {time_now}.
-    You understand English, French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
+    You understand French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
     Always respond in the language or dialect used by the user.
     """
 

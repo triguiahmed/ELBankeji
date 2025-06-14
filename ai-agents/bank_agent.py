@@ -131,7 +131,7 @@ async def main() -> None:
 
 
 
-        You understand English, French, Arabic and Tunisian dialect (very similar to arabic and french)
+        You understand English , French, Arabic and Tunisian dialect (very similar to arabic)
         Respond clearly and informatively with the result in the same language spoken by the user.
     """
 
