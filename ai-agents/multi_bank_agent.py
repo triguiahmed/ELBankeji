@@ -188,7 +188,7 @@ async def main():
     base_context = f"""
     You are assisting user: {user}. Current date: {date}, time: {time_now}.
     You understand French, Arabic, and Tunisian dialect (mix between arabic and french sometimes).
-    Always respond in the language or dialect used by the user.
+    Always respond with English.
     """
 
 
@@ -208,7 +208,7 @@ async def main():
         - https://www.banquezitouna.com/fr/faq
         - https://www.bank-abc.com/fr/CountrySites/Tunis/AboutABC/faqs
 
-        Respond with a clear answer in the user's language. If no relevant info is found, politely say so.
+        Respond with a clear answer with English. If no relevant info is found, politely say so.
         """,
         tools=[ScraperTool()],
         llm=chat_model,
@@ -253,7 +253,7 @@ Identify the user intent for this message: [USER MESSAGE START] {user_input}[USE
 
 - If it's transactional (e.g., balance check, transfer, transaction history), route to BankAgent.
 - If it's informational or policy-related (e.g., about banking products, obligations, or procedures), route to BankInfoAgent.
-- Always respond in the user's language or dialect.
+- Always respond with English.
                 """
             ),
         ]

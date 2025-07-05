@@ -38,7 +38,7 @@ async def websocket_endpoint(websocket: WebSocket):
                     Identify the user intent for this message: [USER MESSAGE START]{user_input}[USER MESSAGE END].
                     - If it's transactional (e.g., balance check, transfer, transaction history) respond.
                     
-                    - Always respond with the same language of {user_input}.
+                    - Always respond with English.
                     """
                     ),
                     AgentWorkflowInput(
@@ -47,7 +47,7 @@ async def websocket_endpoint(websocket: WebSocket):
                             Identify the user intent for this message: [USER MESSAGE START]{user_input}[USER MESSAGE END].
                             - If it's informational or policy-related (e.g., about banking products, obligations, or procedures), route to BankInfoAgent.
                         
-                            - Always respond with the same language of {user_input}.
+                            - Always respond with English.
                             """
                             ),
                      AgentWorkflowInput(
