@@ -1,8 +1,5 @@
 
 <h1 align="center">
-  <picture>
-    <img alt="ElBankeji" src="elb_icon.png" width="150"><br><br>
-  </picture>
   ElBankeji Platform
 </h1>
 
